@@ -3,23 +3,6 @@ extern crate reqwest;
 use serde::{Deserialize, Serialize};
 use reqwest::header::CONTENT_LENGTH;
 
-/*
-#[derive(Debug, Serialize, Deserialize)]
-struct List {
-    response: GSLT,
-}
-
-struct GSLT {
-    steamid: String,
-    appid: i32,
-    login_token: String,
-    memo: String,
-    is_deleted: bool,
-    is_expired: bool,
-    rt_last_logon:i32,
-}
-*/
-
 #[derive(Debug, Serialize, Deserialize)]
 struct GsltResponse {
     response: GsltStruct
