@@ -1,27 +1,25 @@
-extern crate reqwest;
-
+use anyhow::*;
 use serde::{Deserialize, Serialize};
-use reqwest::header::CONTENT_LENGTH;
 
 #[derive(Debug, Serialize, Deserialize)]
-struct GsltResponse {
-    response: GsltStruct
+struct GsltCredentialResponse {
+    response: GsltCredentialData
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct GsltStruct {
+struct GsltCredentialData {
     steamid: String,
-	login_token: String
+    login_token: String
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 struct GsltListResponse {
-    response: GsltListResponseDetail
+    response: GsltListResponseData
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct GsltListResponseDetail {
-    servers: Vec<GsltListGslt>,
+struct GsltListResponseData {
+    servers: Vec<GsltData>,
 	is_banned:bool,
 	expires:u32,
 	actor:String,
@@ -29,7 +27,7 @@ struct GsltListResponseDetail {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct GsltListGslt  {
+struct GsltData  {
 	steamid:String,
 	appid: i16,
 	login_token: String,
@@ -39,45 +37,44 @@ struct GsltListGslt  {
 	rt_last_logon: u32
 }
 
-#[tokio::main]
-async fn main(){
-    let _list = get_list().await;
-    // let _gslt = get_gslt().await;
-}
-
-async fn get_list() -> Result<(), reqwest::Error> {
-
-    let res = reqwest::get("https://api.steampowered.com/IGameServersService/GetAccountList/v1/?key=STEAM_WEB_API_KEY").await?;
-    if res.status() != 200 {
-        println!("Unknown ERROR : {}", res.status())
-    }
-
-    let body = res.text().await?;
-    let list: GsltListResponse = match serde_json::from_str(&body){
-        Ok(n) => n,
-        Err(err) => panic!("ERR : {:?}\nBODY : {}",err,body),
-    };
-    println!("list.response : {:?}", list.response);
-
+fn main() -> Result<()> {
+    let list = get_list("STEAM_WEB_API_KEY")?;
+    println!("list: {:?}", list);
     Ok(())
 }
 
-async fn get_gslt() -> Result<(), reqwest::Error> {
-    let client = reqwest::Client::new();
-    let res = client.post("https://api.steampowered.com/IGameServersService/CreateAccount/v1/?key=STEAM_WEB_API_KEY&appid=730&memo=RUST")
-    .header(CONTENT_LENGTH, 0)
-        .send()
-        .await?;
-    if res.status() != 200 {
-        println!("Unknown ERROR : {}", res.status())
-    }
+fn get_list(steam_web_api_key: impl Into<String>) -> Result<GsltListResponse> {
+    let steam_web_api_key = steam_web_api_key.into();
+    let request_url = format!("https://api.steampowered.com/IGameServersService/GetAccountList/v1/?key={}", steam_web_api_key);
 
-    let body = res.text().await?;
-    let gslt: GsltResponse = match serde_json::from_str(&body){
-        Ok(n) => n,
-        Err(err) => panic!("ERR : {:?}\nBODY : {}",err,body),
-    };
-    println!("login_token: {}, steamid: {}", gslt.response.login_token, gslt.response.steamid);
+    let response = ureq::get(&request_url)
+                        .timeout_connect(10_000)
+                        .call();
 
-    Ok(())
+    if response.status() != 200 { anyhow!("status code is not 200."); }
+
+    let body = response.into_string()?;
+
+    let list: GsltListResponse = serde_json::from_str(&body).with_context(|| format!("Failed parse json."))?;
+
+    Ok(list)
+}
+
+fn get_gslt(steam_web_api_key: impl Into<String>, app_id: impl Into<String>, memo: impl Into<String>) -> Result<GsltCredentialResponse> {
+    let steam_web_api_key = steam_web_api_key.into();
+    let app_id = app_id.into();
+    let memo = memo.into();
+    let request_url = format!("https://api.steampowered.com/IGameServersService/CreateAccount/v1/?key={}&appid={}&memo={}", steam_web_api_key, app_id, memo);
+
+    let response = ureq::post(&request_url)
+                        .timeout_connect(10_000)
+                        .call();
+
+    if response.status() != 200 { anyhow!("status code is not 200."); }
+
+    let body = response.into_string()?;
+
+    let list: GsltCredentialResponse = serde_json::from_str(&body).with_context(|| format!("Failed parse json."))?;
+
+    Ok(list)
 }
