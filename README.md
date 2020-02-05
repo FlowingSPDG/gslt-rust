@@ -2,15 +2,15 @@
 
 ## What's this?
 
-A tool to manage **Game Server Login Token**(GSLT) written in Rust.
+A tool to manage [**Game Server Login Token**(GSLT)](https://steamcommunity.com/dev/managegameservers) written in Rust.
 
 ## install
 `WIP`
 
 ## example
-see `examples` directory.
+see [`examples`](https://github.com/FlowingSPDG/gslt-rust/tree/master/examples) directory.
 
-basically, Create `GsltManager` with your own `STEAM_WEB_API_KEY`,
+basically, Create `GsltManager` with your own [`STEAM_WEB_API_KEY`,](https://steamcommunity.com/dev/apikey)
 
 and `GsltList`, `GsltCredential`, etc...(still developing) according to the API you want to use.
 
