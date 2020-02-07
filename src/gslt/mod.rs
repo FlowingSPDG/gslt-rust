@@ -5,6 +5,7 @@ use url::form_urlencoded;
 pub mod credential;
 pub mod list;
 pub mod delete;
+pub mod setmemo;
 
 use credential::GsltCredentialResponse;
 use list::GsltListResponse;
@@ -44,6 +45,10 @@ pub trait GsltCredential {
 
 pub trait GsltDelete {
     fn delete_gslt(&self, steam_id: u64) -> Result<()>;
+}
+
+pub trait GsltSetmemo {
+    fn setmemo_gslt(&self, steam_id: u64, memo: impl Into<String>) -> Result<()>;
 }
 
 pub(crate) fn encode(s: &str) -> String {
