@@ -1,13 +1,8 @@
-use anyhow::*;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use url::form_urlencoded;
 
-pub mod credential;
-pub mod list;
-pub mod setmemo;
-
-use credential::GsltCredentialResponse;
-use list::GsltListResponse;
+pub mod i_game_servers_service;
 
 pub struct GsltManager {
     pub steam_web_api_key: String,
@@ -34,17 +29,14 @@ impl GsltManager {
     }
 }
 
-pub trait GsltList {
+use i_game_servers_service::GsltListResponse;
+use i_game_servers_service::GsltCredentialResponse;
+
+pub trait IGameServersService {
     fn get_list(&self) -> Result<GsltListResponse>;
-}
-
-pub trait GsltCredential {
-    fn create_gslt(&self, app_id: u32, memo: impl Into<String>) -> Result<GsltCredentialResponse>;
-    fn delete_gslt(&self, steam_id: u64) -> Result<()>;
-}
-
-pub trait GsltSetmemo {
+    fn create_account(&self, app_id: u32, memo: impl Into<String>) -> Result<GsltCredentialResponse>;
     fn setmemo_gslt(&self, steam_id: u64, memo: impl Into<String>) -> Result<()>;
+    fn delete_account(&self, steam_id: u64) -> Result<()>;
 }
 
 pub(crate) fn encode(s: &str) -> String {

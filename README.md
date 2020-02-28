@@ -5,14 +5,18 @@
 A tool to manage [**Game Server Login Token**(GSLT)](https://steamcommunity.com/dev/managegameservers) written in Rust.
 
 ## Installation
-`WIP`
+in `Cargo.toml`,
+
+```toml
+gslt-rust = { git = "https://github.com/FlowingSPDG/gslt-rust" }
+```
 
 ## Example
 see [`examples`](https://github.com/FlowingSPDG/gslt-rust/tree/master/examples) directory.
 
 basically, Create `GsltManager` with your own [`STEAM_WEB_API_KEY`,](https://steamcommunity.com/dev/apikey)
 
-and `GsltList`, `GsltCredential`, etc...(still developing) according to the API you want to use.
+then, import `IGameServersService` trait.
 
 ```rs
 // example::create gslt token
@@ -20,14 +24,19 @@ and `GsltList`, `GsltCredential`, etc...(still developing) according to the API 
 // i personally use `anyhow`, so it is used here as well.
 
 use anyhow::Result;
+
 use gslt_rust::gslt::{
     GsltManager,
-    GsltCredential
+    IGameServersService
 };
 
 fn main() -> Result<()> {
     let manager = GsltManager::new("STEAM_WEB_API_KEY");
-    let gslt = manager.create_gslt(730, "MEMO")?;
-    println!("gslt: {:?}", gslt);
+
+    // get account list
+    let list = manager.get_list()?;
+    println!("list: {:?}", list);
+
+    Ok(())
 }
 ```
